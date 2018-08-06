@@ -1,5 +1,5 @@
 import numpy as np
-from math import sqrt, pow, atan, fabs
+from math import sqrt, pow, atan, fabs, inf
 import cv2
 
 
@@ -8,7 +8,7 @@ def get_len(x):
 
 
 def get_tan(x):
-    return (x[3] - x[1]) / (x[2] - x[0]) if (x[2] - x[0]) != 0 else 1
+    return (x[3] - x[1]) / (x[2] - x[0]) if (x[2] - x[0]) != 0 else inf
 
 
 def is_similar_angle(x, y, treshold):
@@ -93,10 +93,37 @@ def get_lines(img):
     return lines
 
 
+def get_direction_vector(lines):
+    assert lines is not None and len(lines) == 2
+
+    if (lines[0][0] + lines[0][2]) < (lines[1][0] + lines[1][2]):
+        left = lines[0] if lines[0][1] < lines[0][3] \
+            else (lines[0][2], lines[0][3], lines[0][0], lines[0][1])
+        right = lines[1] if lines[1][1] < lines[1][3] \
+            else (lines[1][2], lines[1][3], lines[1][0], lines[1][1])
+    else:
+        left = lines[1] if lines[0][1] < lines[0][3] \
+            else (lines[0][2], lines[0][3], lines[0][0], lines[0][1])
+        right = lines[0] if lines[1][1] < lines[1][3] \
+            else (lines[1][2], lines[1][3], lines[1][0], lines[1][1])
+
+    out = (np.array(left) + np.array(right)) / 2
+    out = out.astype(int)
+    return out
+
+
 def draw_lines(img):
     lines = get_lines(img)
+    direction = None
 
     if lines is not None:
         for line in lines:
             cv2.line(img, (line[0], line[1]), (line[2], line[3]),
-                     (0, 255, 0), 6)
+                     (0, 255, 0), 3)
+        if len(lines) == 2:
+            direction = get_direction_vector(lines)
+            cv2.line(img, (direction[0], direction[1]),
+                     (direction[2], direction[3]),
+                     (255, 0, 0), 6)
+
+    return lines, direction

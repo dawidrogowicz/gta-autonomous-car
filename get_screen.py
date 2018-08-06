@@ -5,7 +5,7 @@ import win32ui
 import win32con
 
 
-def get_screen(win_name):
+def get_screen(win_name=None):
     default_rect = (0, 0, 800, 600)
 
     if win_name:
