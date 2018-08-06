@@ -96,6 +96,7 @@ def get_lines(img):
 def draw_lines(img):
     lines = get_lines(img)
 
-    for line in lines:
-        cv2.line(img, (line[0], line[1]), (line[2], line[3]),
-                 (0, 255, 0), 6)
+    if lines is not None:
+        for line in lines:
+            cv2.line(img, (line[0], line[1]), (line[2], line[3]),
+                     (0, 255, 0), 6)
