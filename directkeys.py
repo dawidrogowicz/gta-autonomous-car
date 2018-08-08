@@ -1,15 +1,12 @@
 import ctypes
+import win32api
 
 SendInput = ctypes.windll.user32.SendInput
-Keys = {
+keys = {
     'W': 0x11,
     'A': 0x1E,
     'S': 0x1F,
     'D': 0x20,
-    'NP_2': 0x50,
-    'NP_4': 0x4B,
-    'NP_6': 0x4D,
-    'NP_8': 0x48,
 }
 
 # C struct redefinitions
@@ -66,3 +63,13 @@ def ReleaseKey(hexKeyCode):
         KeyBdInput(0, hexKeyCode, 0x0008 | 0x0002, 0, ctypes.pointer(extra))
     x = Input(ctypes.c_ulong(1), ii_)
     SendInput(1, ctypes.pointer(x), ctypes.sizeof(x))
+
+
+def get_pressed_keys():
+    out = []
+
+    for key in keys:
+        if win32api.GetAsyncKeyState(ord(key)):
+            out.append(key)
+
+    return out

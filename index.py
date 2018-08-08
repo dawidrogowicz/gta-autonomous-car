@@ -2,7 +2,7 @@ import numpy as np
 import time
 from math import fabs
 import cv2
-from directkeys import PressKey, ReleaseKey, Keys
+from directkeys import PressKey, ReleaseKey, keys
 from lines import draw_lines, get_tan
 from get_screen import get_screen
 
@@ -10,26 +10,26 @@ is_running = True
 
 
 def turn_left():
-    PressKey(Keys['A'])
-    ReleaseKey(Keys['W'])
-    ReleaseKey(Keys['D'])
+    PressKey(keys['A'])
+    ReleaseKey(keys['W'])
+    ReleaseKey(keys['D'])
 
 
 def turn_right():
-    PressKey(Keys['D'])
-    ReleaseKey(Keys['W'])
-    ReleaseKey(Keys['A'])
-    ReleaseKey(Keys['A'])
+    PressKey(keys['D'])
+    ReleaseKey(keys['W'])
+    ReleaseKey(keys['A'])
+    ReleaseKey(keys['A'])
 
 
 def speed_up():
-    PressKey(Keys['W'])
-    ReleaseKey(Keys['A'])
-    ReleaseKey(Keys['D'])
+    PressKey(keys['W'])
+    ReleaseKey(keys['A'])
+    ReleaseKey(keys['D'])
 
 
 def slow_down():
-    ReleaseKey(Keys['W'])
+    ReleaseKey(keys['W'])
 
 
 def steer(tan, img):
