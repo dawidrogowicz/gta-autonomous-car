@@ -2,12 +2,14 @@ import ctypes
 import win32api
 
 SendInput = ctypes.windll.user32.SendInput
-keys = {
+keycodes = {
     'W': 0x11,
     'A': 0x1E,
     'S': 0x1F,
     'D': 0x20,
 }
+
+keys_to_tract = 'WAD'
 
 # C struct redefinitions
 PUL = ctypes.POINTER(ctypes.c_ulong)
@@ -68,7 +70,7 @@ def ReleaseKey(hexKeyCode):
 def get_pressed_keys():
     out = []
 
-    for key in keys:
+    for key in keys_to_tract:
         if win32api.GetAsyncKeyState(ord(key)):
             out.append(key)
 
