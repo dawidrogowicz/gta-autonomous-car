@@ -9,7 +9,7 @@ from directkeys import get_pressed_keys, keys_to_tract
 from get_screen import get_screen
 
 is_running = True
-fps_limit = 30
+fps_limit = 16
 fps_check_interval = 1
 fps_limit_treshold = 1 / fps_limit * 0.2
 # 27 refers to ESC key
@@ -17,7 +17,7 @@ pause_key = 27
 file_name = 'data/training_data.hdf5'
 state_name = 'state'
 action_name = 'action'
-batch_size = 200
+batch_size = 512
 # openCV uses shape: (height, width)
 state_dim = (60, 80)
 action_dim = (len(keys_to_tract),)
