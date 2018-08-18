@@ -95,6 +95,8 @@ def main():
         # screen = get_screen()
         screen = cv2.cvtColor(screen, cv2.COLOR_BGR2GRAY)
         screen = cv2.resize(screen, state_dim[::-1])
+        # Conv layers require shape (x, y, color_space)
+        screen = np.reshape(sscreen, (state_dim[0], state_dim[1], 1))
         pressed_keys = input_to_one_hot(get_pressed_keys())
 
         thread = None
