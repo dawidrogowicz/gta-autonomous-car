@@ -7,11 +7,10 @@ import h5py
 import threading
 from directkeys import get_pressed_keys, keys_to_tract
 from get_screen import get_screen
+from fps_sync import FpsSync
 
 is_running = True
 fps_limit = 16
-fps_check_interval = 1
-fps_limit_treshold = 1 / fps_limit * 0.2
 # 27 refers to ESC key
 pause_key = 27
 file_name = 'data/training_data.hdf5'
@@ -78,25 +77,26 @@ def main():
     iterations = 0
     state_buffer = []
     action_buffer = []
-    frametimes = deque(maxlen=fps_limit * fps_check_interval)
-    frametimes.append(time.time())
+    fps_sync = FpsSync(fps_limit)
 
     for i in range(3)[::-1]:
         print('starting in {} seconds'.format(i), end='\r')
         time.sleep(1)
     print('\nRecording!')
 
+    fps_sync.init()
+
     while(is_running):
         if win32api.GetAsyncKeyState(pause_key):
             print('\nstopped')
             break
 
-        screen = get_screen('Grand Theft Auto V')
-        # screen = get_screen()
+        # screen = get_screen('Grand Theft Auto V')
+        screen = get_screen()
         screen = cv2.cvtColor(screen, cv2.COLOR_BGR2GRAY)
         screen = cv2.resize(screen, state_dim[::-1])
         # Conv layers require shape (x, y, color_space)
-        screen = np.reshape(sscreen, (state_dim[0], state_dim[1], 1))
+        screen = np.reshape(screen, (state_dim[0], state_dim[1], 1))
         pressed_keys = input_to_one_hot(get_pressed_keys())
 
         thread = None
@@ -117,16 +117,9 @@ def main():
         iterations += 1
 
         if iterations % 10 == 0:
-            print('fps: {}'.format(len(frametimes) /
-                                   (time.time() - frametimes[0])),
-                  end='\r')
+            print('fps: {}'.format(fps_sync.get_fps()), end='\r')
 
-        # limit fps to heep it under target limit
-        if ((1 / fps_limit) >
-                (time.time() - frametimes[-1]) + fps_limit_treshold):
-            time.sleep((1 / fps_limit) - (time.time() - frametimes[-1]))
-
-        frametimes.append(time.time())
+        fps_sync.sync()
 
 
 main()
