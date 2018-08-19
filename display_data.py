@@ -2,7 +2,6 @@ import numpy as np
 import time
 import cv2
 from collections import deque
-from utils.directkeys import keys_to_tract
 import win32api
 import h5py
 
@@ -16,10 +15,6 @@ file_name = 'data/training_data.hdf5'
 state_name = 'state'
 action_name = 'action'
 preview_size = (800, 600)
-
-
-def from_one_hot(one_hot):
-    return [keys_to_tract[i] for i, val in enumerate(one_hot) if val == 1]
 
 
 def main():
@@ -52,13 +47,11 @@ def main():
             break
 
         state = cv2.resize(state, preview_size)
-        pressed_keys = from_one_hot(action)
-
         cv2.imshow('preview', state)
+        print(action)
+
         if (cv2.waitKey(25) & 0xFF == ord('q')):
             cv2.destroyAllWindows()
-
-        print(pressed_keys)
 
         iterations += 1
 

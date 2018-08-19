@@ -5,7 +5,7 @@ from collections import deque
 import win32api
 import h5py
 import threading
-from utils.directkeys import get_pressed_keys, keys_to_tract
+from utils.joyoutput import JoyOutput
 from utils.get_screen import get_screen
 from utils.fps_sync import FpsSync
 
@@ -19,17 +19,7 @@ action_name = 'action'
 batch_size = 512
 # openCV uses shape: (height, width)
 state_dim = (60, 80)
-action_dim = (len(keys_to_tract),)
-
-
-def input_to_one_hot(input):
-    one_hot = np.zeros(len(keys_to_tract))
-
-    for key in input:
-        if key in keys_to_tract:
-            one_hot[keys_to_tract.index(key)] = 1
-
-    return one_hot
+action_dim = (1,)
 
 
 def save_batch(state, action):
@@ -43,8 +33,7 @@ def save_batch(state, action):
                 state_name,
                 (batch_size, state_dim[0], state_dim[1]),
                 maxshape=(None, state_dim[0], state_dim[1]),
-                chunks=(batch_size, state_dim[0], state_dim[1]),
-                dtype=np.uint8, data=state),
+                chunks=(batch_size, state_dim[0], state_dim[1]), data=state),
         else:
             f[state_name].resize(f[state_name].shape[0] + batch_size, axis=0)
             f[state_name][-batch_size:] = state
@@ -54,8 +43,7 @@ def save_batch(state, action):
                 action_name,
                 (batch_size, action_dim[0]),
                 maxshape=(None, action_dim[0]),
-                chunks=(batch_size, action_dim[0]),
-                dtype=np.uint8, data=action),
+                chunks=(batch_size, action_dim[0]), data=action),
         else:
             f[action_name].resize(f[action_name].shape[0] + batch_size, axis=0)
             f[action_name][-batch_size:] = action
@@ -77,6 +65,7 @@ def main():
     iterations = 0
     state_buffer = []
     action_buffer = []
+    joy_out = JoyOutput(0)
     fps_sync = FpsSync(fps_limit)
 
     for i in range(3)[::-1]:
@@ -91,18 +80,18 @@ def main():
             print('\nstopped')
             break
 
-        # screen = get_screen('Grand Theft Auto V')
-        screen = get_screen()
-        screen = cv2.cvtColor(screen, cv2.COLOR_BGR2GRAY)
-        screen = cv2.resize(screen, state_dim[::-1])
+        state = get_screen('Grand Theft Auto V')
+        # state = get_screen()
+        state = cv2.cvtColor(state, cv2.COLOR_BGR2GRAY)
+        state = cv2.resize(state, state_dim[::-1])
         # Conv layers require shape (x, y, color_space)
-        screen = np.reshape(screen, (state_dim[0], state_dim[1], 1))
-        pressed_keys = input_to_one_hot(get_pressed_keys())
+        state = np.reshape(state, (state_dim[0], state_dim[1], 1))
+        action = [joy_out.get_axis()]
 
         thread = None
 
-        state_buffer.append(screen)
-        action_buffer.append(pressed_keys)
+        state_buffer.append(state)
+        action_buffer.append(action)
 
         if len(state_buffer) >= batch_size or len(action_buffer) >= batch_size:
             if thread and thread.is_alive():

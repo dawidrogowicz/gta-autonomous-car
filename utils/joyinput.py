@@ -14,12 +14,12 @@ class JoyInput:
     def __init__(self, device_num=1):
         self.joy = pyvjoy.VJoyDevice(device_num)
 
-    def centerXAxis(self):
+    def center_x_axis(self):
         """Sets x axis to center position."""
         self.joy.data.wAxisX = int(self.MAX_JOY_VAL / 2)
         self.joy.update()
 
-    def setXAxis(self, val, hold_time=False):
+    def set_x_axis(self, val, hold_time=False):
         """Sets x axis to a specified value.
 
         Args:
@@ -32,4 +32,4 @@ class JoyInput:
 
         if hold_time:
             time.sleep(hold_time)
-            self.centerXAxis()
+            self.center_x_axis()
