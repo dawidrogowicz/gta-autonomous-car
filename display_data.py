@@ -2,7 +2,7 @@ import numpy as np
 import time
 import cv2
 from collections import deque
-from directkeys import keys_to_tract
+from utils.directkeys import keys_to_tract
 import win32api
 import h5py
 

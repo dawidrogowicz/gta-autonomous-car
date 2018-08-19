@@ -5,9 +5,9 @@ from collections import deque
 import win32api
 import h5py
 import threading
-from directkeys import get_pressed_keys, keys_to_tract
-from get_screen import get_screen
-from fps_sync import FpsSync
+from utils.directkeys import get_pressed_keys, keys_to_tract
+from utils.get_screen import get_screen
+from utils.fps_sync import FpsSync
 
 is_running = True
 fps_limit = 16
