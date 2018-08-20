@@ -65,7 +65,7 @@ def main():
     iterations = 0
     state_buffer = []
     action_buffer = []
-    joy_out = JoyOutput(0)
+    joy_out = JoyOutput(0, calibrate_axes=(0,))
     fps_sync = FpsSync(fps_limit)
 
     for i in range(3)[::-1]:
