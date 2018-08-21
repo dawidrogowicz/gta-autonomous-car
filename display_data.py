@@ -6,7 +6,7 @@ import win32api
 import h5py
 
 is_running = True
-fps_limit = 30
+fps_limit = 16
 fps_check_interval = 1
 fps_limit_treshold = 1 / fps_limit * 0.2
 # 27 refers to ESC key
@@ -15,6 +15,13 @@ file_name = 'data/training_data.hdf5'
 state_name = 'state'
 action_name = 'action'
 preview_size = (800, 600)
+
+
+def draw_angle(img, action):
+    height = int(preview_size[1] * .9)
+    return cv2.line(img, (int(preview_size[0] / 2), height),
+                    (int(preview_size[0] * (action + 1) / 2),
+                     height), (255, 255, 255), 16)
 
 
 def main():
@@ -47,8 +54,10 @@ def main():
             break
 
         state = cv2.resize(state, preview_size)
+        state = draw_angle(state, action[0])
+
         cv2.imshow('preview', state)
-        print(action)
+        print(action, end='\r')
 
         if (cv2.waitKey(25) & 0xFF == ord('q')):
             cv2.destroyAllWindows()

@@ -25,7 +25,7 @@ def get_model():
     model.add(Dense(512))
     model.add(Dense(128))
     model.add(Dense(64))
-    model.add(Dense(3))
+    model.add(Dense(1))
     model.compile('adam', loss='mean_squared_error', metrics=['accuracy'])
     return model
 
@@ -52,9 +52,9 @@ def read_batch():
 states = []
 actions = []
 try:
-    f = h5py.File(file_name, 'a')
+    f = h5py.File(file_name)
     assert state_name in f and action_name in f
-    states = np.reshape(f[state_name][:8192], newshape=(-1, 60, 80, 1))
+    states = f[state_name][:8192]
     actions = f[action_name][:8192]
     assert len(states) == len(actions)
 except Exception as e:

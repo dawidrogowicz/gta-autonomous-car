@@ -19,11 +19,15 @@ action_name = 'action'
 batch_size = 512
 # openCV uses shape: (height, width)
 state_dim = (60, 80)
+color_space = 1
 action_dim = (1,)
 
 
 def save_batch(state, action):
     assert len(state) == len(action) == batch_size
+
+    # Conv layers require shape (x, y, color_space)
+    state = np.expand_dims(state, -1)
 
     try:
         f = h5py.File(file_name, 'a')
@@ -31,9 +35,10 @@ def save_batch(state, action):
         if state_name not in f:
             f.create_dataset(
                 state_name,
-                (batch_size, state_dim[0], state_dim[1]),
-                maxshape=(None, state_dim[0], state_dim[1]),
-                chunks=(batch_size, state_dim[0], state_dim[1]), data=state),
+                (batch_size, state_dim[0], state_dim[1], color_space),
+                maxshape=(None, state_dim[0], state_dim[1], color_space),
+                chunks=(batch_size, state_dim[0], state_dim[1], color_space),
+                data=state),
         else:
             f[state_name].resize(f[state_name].shape[0] + batch_size, axis=0)
             f[state_name][-batch_size:] = state
@@ -84,8 +89,6 @@ def main():
         # state = get_screen()
         state = cv2.cvtColor(state, cv2.COLOR_BGR2GRAY)
         state = cv2.resize(state, state_dim[::-1])
-        # Conv layers require shape (x, y, color_space)
-        state = np.reshape(state, (state_dim[0], state_dim[1], 1))
         action = [joy_out.get_axis()]
 
         thread = None
