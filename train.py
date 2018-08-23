@@ -5,8 +5,9 @@ from keras.models import Sequential
 from keras.layers import Conv2D, LSTM, Dense, Reshape, Input
 from keras.callbacks import TensorBoard
 
-batch_size = 512
-current_batch = 0
+batch_size = 256
+train_split = .8
+epochs = 2
 file_name = 'data/training_data.hdf5'
 state_name = 'state'
 action_name = 'action'
@@ -26,51 +27,61 @@ def get_model():
     model.add(Dense(128))
     model.add(Dense(64))
     model.add(Dense(1))
-    model.compile('adam', loss='mean_squared_error', metrics=['accuracy'])
+    model.compile('adam', loss='mean_squared_error',
+                  metrics=['mae'])
     return model
 
 
-def read_batch():
-    states = []
-    actions = []
+def read_batch(test=False):
     try:
-        f = h5py.File(file_name, 'a')
+        print('opening file')
+        f = h5py.File(file_name)
         assert state_name in f and action_name in f
-        states = f[state_name][current_batch * batch_size:
-                               (current_batch + 1) * batch_size]
-        actions = f[action_name][current_batch * batch_size:
-                                 (current_batch + 1) * batch_size]
-        assert len(states) == len(actions)
-        print('Read batch of size: {} from {}'.format(batch_size, file_name))
+        assert len(f[state_name]) == len(f[action_name])
+        data_size = len(f[state_name])
+        start = int(data_size * train_split) if test else 0
+        end = data_size if test else int(data_size * train_split)
+        step = batch_size
+        for i in range(start, end, step):
+            batch_end = i + step
+            if batch_end > data_size:
+                batch_end = data_size
+            states = f[state_name][i:batch_end]
+            actions = f[action_name][i:batch_end]
+            print('Read batch of size: {} from {}'.format(batch_size,
+                                                          file_name))
+            yield states, actions
     except Exception as e:
         print(e)
     finally:
+        print('closing file')
         f.close()
-    return states, actions
 
-
-states = []
-actions = []
-try:
-    f = h5py.File(file_name)
-    assert state_name in f and action_name in f
-    states = f[state_name][:8192]
-    actions = f[action_name][:8192]
-    assert len(states) == len(actions)
-except Exception as e:
-    print(e)
-finally:
-    f.close()
-
-print(np.shape(states))
-
-split = ceil(len(states) * .9)
 
 model = get_model()
 model.summary()
 
 tensorboard = TensorBoard(log_dir='./logs', write_graph=True)
 
-model.fit(states[:split], actions[:split], batch_size=batch_size,
-          epochs=6, callbacks=[tensorboard])
-model.evaluate(states[split:], actions[split:], batch_size=batch_size)
+print('Training...')
+for i in range(epochs):
+    for states, actions in read_batch():
+        model.train_on_batch(states, actions)
+
+test_states = []
+test_actions = []
+try:
+    f = h5py.File(file_name, 'a')
+    assert state_name in f and action_name in f
+    assert len(f[state_name]) == len(f[action_name])
+    data_len = len(f[state_name])
+    split = int(train_split * data_len)
+    test_states = f[state_name][split:]
+    test_actions = f[action_name][split:]
+except Exception as e:
+    print(e)
+finally:
+    f.close()
+
+score, mae = model.evaluate(test_states, test_actions, batch_size=batch_size)
+print('Score: {}\nMAE: {}'.format(score, mae))

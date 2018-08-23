@@ -16,7 +16,7 @@ pause_key = 27
 file_name = 'data/training_data.hdf5'
 state_name = 'state'
 action_name = 'action'
-batch_size = 512
+batch_size = 256
 # openCV uses shape: (height, width)
 state_dim = (60, 80)
 color_space = 1
