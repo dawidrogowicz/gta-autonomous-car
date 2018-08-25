@@ -29,9 +29,7 @@ def save_batch(state, action):
     # Conv layers require shape (x, y, color_space)
     state = np.expand_dims(state, -1)
 
-    try:
-        f = h5py.File(file_name, 'a')
-
+    with h5py.File(filepath) as f:
         if state_name not in f:
             f.create_dataset(
                 state_name,
@@ -56,12 +54,6 @@ def save_batch(state, action):
         assert f[state_name].shape[0] == f[action_name].shape[0]
         print('Saved batch of size: {} in {}\nCurrent data length: {}'
               .format(batch_size, file_name, f[state_name].shape[0]))
-
-    except Exception as e:
-        print(e)
-
-    finally:
-        f.close()
 
 
 def main():
@@ -90,7 +82,6 @@ def main():
         state = cv2.cvtColor(state, cv2.COLOR_BGR2GRAY)
         state = cv2.resize(state, state_dim[::-1])
         action = [joy_out.get_axis()]
-
         thread = None
 
         state_buffer.append(state)
@@ -107,7 +98,6 @@ def main():
             action_buffer = []
 
         iterations += 1
-
         if iterations % 10 == 0:
             print('fps: {}'.format(fps_sync.get_fps()), end='\r')
 
