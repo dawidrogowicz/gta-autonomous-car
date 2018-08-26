@@ -11,7 +11,7 @@ fps_check_interval = 1
 fps_limit_treshold = 1 / fps_limit * 0.2
 # 27 refers to ESC key
 pause_key = 27
-file_name = 'data/training_data.hdf5'
+filepath = 'data/training_data.flip.hdf5'
 state_name = 'state'
 action_name = 'action'
 preview_size = (800, 600)

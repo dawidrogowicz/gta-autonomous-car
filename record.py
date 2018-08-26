@@ -10,32 +10,29 @@ from utils.get_screen import get_screen
 from utils.fps_sync import FpsSync
 
 is_running = True
-fps_limit = 16
+fps_limit = 8
 # 27 refers to ESC key
 pause_key = 27
 file_name = 'data/training_data.hdf5'
 state_name = 'state'
 action_name = 'action'
-batch_size = 256
+batch_size = 512
 # openCV uses shape: (height, width)
-state_dim = (60, 80)
-color_space = 1
+image_size = (160, 120)
+state_dim = (*image_size[::-1], 3)
 action_dim = (1,)
 
 
 def save_batch(state, action):
     assert len(state) == len(action) == batch_size
 
-    # Conv layers require shape (x, y, color_space)
-    state = np.expand_dims(state, -1)
-
     with h5py.File(filepath) as f:
         if state_name not in f:
             f.create_dataset(
                 state_name,
-                (batch_size, state_dim[0], state_dim[1], color_space),
-                maxshape=(None, state_dim[0], state_dim[1], color_space),
-                chunks=(batch_size, state_dim[0], state_dim[1], color_space),
+                (batch_size, *state_dim),
+                maxshape=(None, *state_dim),
+                chunks=(batch_size, *state_dim),
                 data=state),
         else:
             f[state_name].resize(f[state_name].shape[0] + batch_size, axis=0)
@@ -56,7 +53,7 @@ def save_batch(state, action):
               .format(batch_size, file_name, f[state_name].shape[0]))
 
 
-def main():
+def record():
     # reset pause key listener
     win32api.GetAsyncKeyState(pause_key)
     iterations = 0
@@ -78,9 +75,8 @@ def main():
             break
 
         state = get_screen('Grand Theft Auto V')
-        # state = get_screen()
-        state = cv2.cvtColor(state, cv2.COLOR_BGR2GRAY)
-        state = cv2.resize(state, state_dim[::-1])
+        state = cv2.resize(state, image_size)
+        print(np.shape(state))
         action = [joy_out.get_axis()]
         thread = None
 
@@ -104,4 +100,4 @@ def main():
         fps_sync.sync()
 
 
-main()
+record()
